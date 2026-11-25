@@ -1,0 +1,2 @@
+{"id":"smoke-001","source":"synthetic_smoke","language":"en","messages":[{"role":"user","content":"Name a primary color."},{"role":"assistant","content":"Red."}],"metadata":{"task_category":"short_answer"}}
+{"id":"smoke-002","source":"synthetic_smoke","language":"en","messages":[{"role":"user","content":"Explain why we freeze the base weights during LoRA training."},{"role":"assistant","content":"The adapter learns the update while the original weights stay fixed."}],"metadata":{"task_category":"explanation"}}

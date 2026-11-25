@@ -1,0 +1,3 @@
+seed: 42
+learning_rate: 0.01
+fixture: ../tests/fixtures/sft_smoke.jsonl

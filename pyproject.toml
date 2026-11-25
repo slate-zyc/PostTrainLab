@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "posttrainlab"
+version = "0.1.0"
+description = "Small-model post-training experiments"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "torch==2.14.1+cu130",
+    "transformers",
+    "peft",
+    "trl",
+    "datasets",
+    "accelerate",
+    "PyYAML",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
