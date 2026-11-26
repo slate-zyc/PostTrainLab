@@ -1,0 +1,12 @@
+# 首版 Reward Model / DPO 共用偏好数据
+dataset_id: HuggingFaceH4/ultrafeedback_binarized
+train_rows: 6500
+test_rows: 600
+seed: 42
+validation_ratio: 0.1
+
+# chosen 和 rejected 都按此上限检查。
+max_content_tokens: 1536
+near_duplicate_threshold: 97
+tokenizer_id: Qwen/Qwen2.5-0.5B
+tokenizer_revision: 060db6499f32faf8b98477b0a26969ef7d8b9987

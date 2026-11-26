@@ -1,53 +1,77 @@
-# 第一阶段 Smoke Test 实测锁定（Windows x86_64 / Python 3.11）
+# PostTrainLab 实测依赖锁定（Windows x86_64 / Python 3.11）
 # 先配置 PyTorch cu130 索引，安装命令见 README。
-accelerate==1.16.0
-annotated-doc==0.0.7
-annotated-types==0.8.0
-anyio==4.16.0
-click==8.5.1
-colorama==0.4.6
-datasets==5.2.0
-dill==0.4.1
-filelock==4.3.1
-fsspec==2026.9.0
-h11==0.16.0
-hf-xet==1.8.0
-httpcore2==2.16.2
-httpx2==2.16.2
-huggingface_hub==2.4.0
-idna==3.20
-Jinja2==3.1.6
-markdown-it-py==4.3.0
-MarkupSafe==3.0.4
-mdurl==0.1.2
-mpmath==1.3.0
-multiprocess==0.70.19
-networkx==3.6.1
-numpy==2.4.6
-packaging==26.3
-pandas==3.1.1
-peft==0.22.0
-psutil==7.2.2
-pyarrow==26.0.1
-pydantic==2.14.4
-pydantic_core==2.50.5
-Pygments==2.21.0
-python-dateutil==4.0.0
-PyYAML==6.0.4
-regex==2026.11.24
-rich==15.0.0
-safetensors==0.8.0
-setuptools==84.2.1
-shellingham==1.5.4
-sympy==1.14.0
-tokenizers==0.23.3
-torch==2.14.1+cu130
-tqdm==4.70.1
-transformers==5.24.1
-trl==1.18.2
-truststore==0.10.5
-typer==0.29.2
-typing-inspection==0.4.5
-typing_extensions==4.16.0
-tzdata==2026.6
-xxhash==4.1.0
+
+# 训练、模型与权重
+torch==2.14.1+cu130        # 提供张量计算、自动求导和 CUDA 加速，是训练后端。
+transformers==5.24.1       # 提供预训练模型、Tokenizer、生成和训练接口。
+peft==0.22.0               # 提供 LoRA 等参数高效微调方法和 Adapter 管理。
+trl==1.18.2                # 提供 SFT、DPO、奖励建模和强化学习等后训练工具。
+accelerate==1.16.0         # 管理 CPU、GPU 和多卡运行，支持混合精度训练。
+tokenizers==0.23.3         # 提供高性能文本分词和 token 编解码。
+safetensors==0.8.0         # 以安全的张量格式读写模型权重和 Adapter。
+
+# 数据读取与处理
+rapidfuzz==3.14.6         # 快速计算文本相似度，用于近似 Prompt 去重。
+datasets==5.2.0            # 加载、转换和划分训练及评测数据集。
+pyarrow==26.0.1            # 提供 Arrow 列式数据表示和 Parquet 文件读写。
+pandas==3.1.1              # 处理表格数据，便于清洗、统计和导出结果。
+numpy==2.4.6               # 提供多维数组及向量化数值运算。
+fsspec==2026.9.0           # 统一操作本地和远程文件系统的接口。
+dill==0.4.1                # 序列化 Python 函数和对象，便于缓存或跨进程传递。
+multiprocess==0.70.19      # 支持多进程数据处理，通过 dill 传递任务。
+xxhash==4.1.0              # 快速计算哈希，用于数据指纹等场景。
+python-dateutil==4.0.0     # 解析日期字符串并处理日期偏移等操作。
+tzdata==2026.6             # 提供时区数据库，供 Windows 等平台进行时区转换。
+
+# Hugging Face 下载与网络
+huggingface_hub==2.4.0     # 访问 Hugging Face Hub，下载和缓存模型及数据。
+hf-xet==1.8.0              # 通过 Xet 加速 Hugging Face Hub 大文件传输。
+httpx2==2.16.2             # 提供同步和异步 HTTP 请求接口。
+httpcore2==2.16.2          # 为 HTTPX2 提供底层 HTTP 传输和连接池。
+h11==0.16.0                # 实现 HTTP/1.1 协议的消息编解码。
+anyio==4.16.0              # 提供统一的异步任务和网络接口，支持 asyncio 与 Trio。
+idna==3.20                 # 处理国际化域名和 ASCII 域名之间的转换。
+truststore==0.10.5         # 使用操作系统的信任库验证 TLS 证书。
+filelock==4.3.1            # 提供跨进程文件锁，协调共享缓存和文件写入。
+
+# 配置、校验与类型
+PyYAML==6.0.4              # 读取和写入 YAML 配置文件。
+pydantic==2.14.4           # 基于类型注解解析和校验结构化数据。
+pydantic_core==2.50.5      # 为 Pydantic 提供底层数据校验和序列化。
+annotated-types==0.8.0     # 定义可附加到类型注解的范围和长度等约束。
+annotated-doc==0.0.7       # 通过 typing.Annotated 给参数和字段添加说明。
+typing-inspection==0.4.5   # 在运行时解析和检查 Python 类型注解。
+typing_extensions==4.16.0  # 向较旧 Python 版本提供较新的类型注解功能。
+
+# 命令行、终端与 Markdown
+typer==0.29.2              # 用 Python 类型注解定义命令行参数和命令。
+click==8.5.1               # 提供命令行解析和子命令管理，是 Typer 的基础。
+rich==15.0.0               # 在终端显示彩色文本、表格和格式化输出。
+tqdm==4.70.1               # 在循环和训练过程中显示进度条。
+colorama==0.4.6            # 支持在 Windows 终端显示 ANSI 颜色。
+shellingham==1.5.4         # 检测当前 shell 的类型。
+Pygments==2.21.0           # 给代码和其他结构化文本做语法高亮。
+markdown-it-py==4.3.0      # 解析 Markdown，供 Rich 等工具渲染。
+mdurl==0.1.2               # 提供 Markdown 链接所需的 URL 解析和处理。
+
+# 聊天模板与文本处理
+Jinja2==3.1.6              # 渲染文本模板，例如模型的 Chat Template。
+MarkupSafe==3.0.4          # 提供 Jinja2 使用的转义和安全字符串处理。
+regex==2026.11.24          # 提供增强的正则表达式功能和 Unicode 匹配。
+
+# 数学、系统与包管理
+sympy==1.14.0              # 提供符号数学计算，是 PyTorch 的依赖之一。
+mpmath==1.3.0              # 提供任意精度数值运算，供 SymPy 使用。
+networkx==3.6.1            # 提供图结构和图算法，是 PyTorch 的依赖之一。
+psutil==7.2.2              # 读取 CPU、内存和进程等系统资源信息。
+packaging==26.3            # 解析 Python 包版本、依赖声明和兼容性标签。
+setuptools==84.2.1         # 构建和安装 Python 包，支持项目的可编辑安装。
+
+# 绘图与图像
+matplotlib==3.11.2        # 生成 token 长度和任务类别分布图。
+contourpy==1.3.3          # 为 Matplotlib 计算等值线等绘图数据。
+cycler==0.12.1            # 管理绘图的颜色、线型等样式序列。
+fonttools==4.69.0         # 读写和处理字体文件。
+kiwisolver==1.5.1         # 求解多子图布局中的位置约束。
+pillow==13.0.0            # 读写 PNG 等图像文件。
+pyparsing==3.3.3          # 解析绘图标签等表达式。

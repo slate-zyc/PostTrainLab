@@ -1,0 +1,13 @@
+# 首版 SFT 工程子集
+dataset_id: HuggingFaceH4/ultrachat_200k
+train_rows: 8000
+train_file: data/train_sft-00000-of-00003-a3ecf92756993583.parquet  # UltraChat 的 train_sft 有 3 个 Parquet 分片. 固定官方训练分片，避免并发读取抖动
+test_rows: 600
+seed: 42
+validation_ratio: 0.1
+
+# 应用 Chat Template 后再检查完整训练序列长度。
+max_content_tokens: 1536
+near_duplicate_threshold: 97
+tokenizer_id: Qwen/Qwen2.5-0.5B
+tokenizer_revision: 060db6499f32faf8b98477b0a26969ef7d8b9987

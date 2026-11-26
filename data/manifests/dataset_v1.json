@@ -1,0 +1,120 @@
+{
+  "version": "v1",
+  "datasets": {
+    "sft": {
+      "splits": {
+        "train": {
+          "file": "data/processed/v1/sft/train.jsonl",
+          "rows": 5649
+        },
+        "validation": {
+          "file": "data/processed/v1/sft/validation.jsonl",
+          "rows": 628
+        },
+        "test": {
+          "file": "data/processed/v1/sft/test.jsonl",
+          "rows": 489
+        }
+      },
+      "config": {
+        "dataset_id": "HuggingFaceH4/ultrachat_200k",
+        "train_rows": 8000,
+        "train_file": "data/train_sft-00000-of-00003-a3ecf92756993583.parquet",
+        "test_rows": 600,
+        "seed": 42,
+        "validation_ratio": 0.1,
+        "max_content_tokens": 1536,
+        "near_duplicate_threshold": 97,
+        "tokenizer_id": "Qwen/Qwen2.5-0.5B",
+        "tokenizer_revision": "060db6499f32faf8b98477b0a26969ef7d8b9987"
+      },
+      "raw_sources": {
+        "train": {
+          "dataset_id": "HuggingFaceH4/ultrachat_200k",
+          "url": "https://huggingface.co/datasets/HuggingFaceH4/ultrachat_200k/tree/8049631c405ae6576f93f445c6b8166f76f5505a",
+          "revision": "8049631c405ae6576f93f445c6b8166f76f5505a",
+          "license": "MIT",
+          "data_dir": null,
+          "upstream_file": "data/train_sft-00000-of-00003-a3ecf92756993583.parquet",
+          "split": "train_sft",
+          "rows": 8000,
+          "seed": 42,
+          "shuffle_buffer": 512,
+          "file": "data/raw/HuggingFaceH4--ultrachat_200k/v1-train_sft-n8000-s42-b512-00000-of-00003.jsonl",
+          "downloaded_at_utc": "2026-11-25T16:47:02.965119+00:00"
+        },
+        "test": {
+          "dataset_id": "HuggingFaceH4/ultrachat_200k",
+          "url": "https://huggingface.co/datasets/HuggingFaceH4/ultrachat_200k/tree/8049631c405ae6576f93f445c6b8166f76f5505a",
+          "revision": "8049631c405ae6576f93f445c6b8166f76f5505a",
+          "license": "MIT",
+          "data_dir": null,
+          "upstream_file": null,
+          "split": "test_sft",
+          "rows": 600,
+          "seed": 42,
+          "shuffle_buffer": 512,
+          "file": "data/raw/HuggingFaceH4--ultrachat_200k/v1-test_sft-n600-s42-b512.jsonl",
+          "downloaded_at_utc": "2026-11-25T16:36:03.172633+00:00"
+        }
+      }
+    },
+    "preference": {
+      "splits": {
+        "train": {
+          "file": "data/processed/v1/preference/train.jsonl",
+          "rows": 5730
+        },
+        "validation": {
+          "file": "data/processed/v1/preference/validation.jsonl",
+          "rows": 637
+        },
+        "test": {
+          "file": "data/processed/v1/preference/test.jsonl",
+          "rows": 593
+        }
+      },
+      "config": {
+        "dataset_id": "HuggingFaceH4/ultrafeedback_binarized",
+        "train_rows": 6500,
+        "test_rows": 600,
+        "seed": 42,
+        "validation_ratio": 0.1,
+        "max_content_tokens": 1536,
+        "near_duplicate_threshold": 97,
+        "tokenizer_id": "Qwen/Qwen2.5-0.5B",
+        "tokenizer_revision": "060db6499f32faf8b98477b0a26969ef7d8b9987"
+      },
+      "raw_sources": {
+        "train": {
+          "dataset_id": "HuggingFaceH4/ultrafeedback_binarized",
+          "url": "https://huggingface.co/datasets/HuggingFaceH4/ultrafeedback_binarized/tree/3949bf5f8c17c394422ccfab0c31ea9c20bdeb85",
+          "revision": "3949bf5f8c17c394422ccfab0c31ea9c20bdeb85",
+          "license": "MIT",
+          "data_dir": null,
+          "upstream_file": null,
+          "split": "train_prefs",
+          "rows": 6500,
+          "seed": 42,
+          "shuffle_buffer": 512,
+          "file": "data/raw/HuggingFaceH4--ultrafeedback_binarized/v1-train_prefs-n6500-s42-b512.jsonl",
+          "downloaded_at_utc": "2026-11-25T16:32:35.682246+00:00"
+        },
+        "test": {
+          "dataset_id": "HuggingFaceH4/ultrafeedback_binarized",
+          "url": "https://huggingface.co/datasets/HuggingFaceH4/ultrafeedback_binarized/tree/3949bf5f8c17c394422ccfab0c31ea9c20bdeb85",
+          "revision": "3949bf5f8c17c394422ccfab0c31ea9c20bdeb85",
+          "license": "MIT",
+          "data_dir": null,
+          "upstream_file": null,
+          "split": "test_prefs",
+          "rows": 600,
+          "seed": 42,
+          "shuffle_buffer": 512,
+          "file": "data/raw/HuggingFaceH4--ultrafeedback_binarized/v1-test_prefs-n600-s42-b512.jsonl",
+          "downloaded_at_utc": "2026-11-25T16:34:31.990680+00:00"
+        }
+      }
+    }
+  }
+}

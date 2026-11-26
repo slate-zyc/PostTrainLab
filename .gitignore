@@ -1,16 +1,30 @@
-/outputs/
+# 数据缓存和中间产物。版本清单和测试样例随仓库提交。
 /data/raw/
 /data/interim/
 /data/processed/
-__pycache__/
-*.py[cod]
-.pytest_cache/
-*.egg-info/
-.venv/
-.env
-.env.*
-!.env.example
+
+# 实验输出，包括训练日志、质量报告和评测结果。
+/outputs/
+
+# 模型权重、Adapter 和训练检查点。
 *.safetensors
 *.pt
 *.pth
 *.ckpt
+
+# 本地虚拟环境和运行密钥。保留可提交的环境变量示例。
+.venv/
+.env
+.env.*
+!.env.example
+
+# Python 字节码、测试缓存和构建产物。
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+/build/
+/dist/
+
+# PyCharm 工作区和本机 IDE 设置。
+/.idea/

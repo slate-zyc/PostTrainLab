@@ -15,6 +15,12 @@ dependencies = [
     "datasets",
     "accelerate",
     "PyYAML",
+    "pydantic",
+    "filelock",
+    "httpx2",
+    "rapidfuzz",
+    "matplotlib",
+    "numpy",
 ]
 
 [tool.setuptools.packages.find]
