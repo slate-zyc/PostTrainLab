@@ -4,7 +4,7 @@ PostTrainLab 是一个面向通用指令遵循和回答质量的小模型后训�
 
 ## 项目进度
 
-第一阶段提供本地 Tiny SFT Smoke Test。它使用内置 JSONL 和随机初始化的 Tiny Qwen2 验证一次 LoRA 更新。可离线运行。正式数据处理、训练和评测将逐阶段实现。
+已完成 v1 数据准备、离线 Tiny SFT 验证和 Qwen2.5-0.5B LoRA 训练。本机完成 E1 清洗对照和 E2 的 2K／5K 数据规模对照。
 
 ## 环境与运行
 
@@ -51,6 +51,27 @@ python scripts/analyze_data.py --config configs/data_sft.yaml
 ```powershell
 python -m unittest discover -s tests -p test_data_pipeline.py
 ```
+
+## SFT 训练与评测
+
+从固定版本的 Qwen2.5-0.5B Base 开始训练。训练入口从数据清单读取 v1 的 SFT 训练集和验证集，应用 Qwen Chat Template。每轮 Assistant 正文及结束符参与损失。训练默认右截断到 512 token。
+
+```powershell
+python -m unittest discover -s tests -v
+python scripts/train_sft.py --config configs/sft.yaml --device cuda --train-samples 16 --eval-samples 8 --max-steps 2 --output-dir outputs/models/sft/local-check
+python scripts/evaluate_models.py --config configs/sft.yaml --adapter outputs/models/sft/local-check/adapter --output-dir outputs/sft_evaluation/local-check
+```
+
+首次运行从 Hugging Face 获取 Base 和 Tokenizer。省略样本与步数上限时，训练使用全部保留样本和配置指定的 epoch。每次训练指定新的 `--output-dir`，或省略该参数以使用默认时间戳目录。
+
+每次训练保存 `adapter/`、`run.json`、`metrics.json` 和 `loss.png`。评测入口从独立测试集固定抽取 20 条首轮 Prompt，保存 Base、各 Adapter 和参考回答到 `answers.jsonl`。在 `--adapter` 后传入多个 Adapter 路径即可复用同一组 Prompt。
+
+### SFT 对照实验
+
+本机实测指标、输出目录和案例对照见 [SFT 实验记录](docs/SFT_RESULTS.md)。
+
+- **E1 清洗前后。** 运行 `python scripts/prepare_sft_ablation.py --samples 384 --output-dir outputs/sft_ablation/v1-protocol`。在同一批原始行中生成 `uncleaned.jsonl` 和 `cleaned.jsonl`。用相同配置分别通过 `--train-file` 训练，再给较大组传入 `--train-samples` 以匹配较小组实际进入训练器的条数。
+- **E2 数据规模。** 使用默认清洗后训练集，分别传入 `--train-samples 2000` 和 `--train-samples 5000`。两次运行使用同一份 SFT 配置和固定验证集。小规模组是大规模组可训练样本的前缀。
 
 ## 实验主线
 

@@ -26,6 +26,7 @@ from posttrainlab.data.sources import (
 # 格式校验、类别与长度
 # ============================================================
 
+# 自定义任务类型
 TASK_RULES = [
     ("translation", r"\btranslat(?:e|ion)\b"),
     ("summarization", r"\bsummari[sz](?:e|ation)\b|\bsummary\b"),
@@ -67,17 +68,18 @@ def token_counts(example, lengths: dict[str, int]) -> dict[str, int]:
     """根据已测得的正文长度，计算单条样本的长度统计。
 
     输入
-        example 是标准化样本。lengths 把消息正文映射到其 token 数。
+        example 是标准化样本，SFTExample 或 PreferenceExample 对象。lengths 把消息正文映射到其 token 数。
     输出
         返回含 prompt、answer、total 的计数字典。偏好样本还包含 chosen 和 rejected。
         SFT 对所有 Assistant 回合的回答求和。偏好数据以较长回答计算总长。
     """
     # 这里统计正文 token。应用 Chat Template 后另行统计完整训练序列。
     if isinstance(example, SFTExample):
-        context = sum(lengths[message.content] for message in example.messages if message.role != "assistant")
+        context = sum(lengths[message.content] for message in example.messages if message.role != "assistant")  # lengths[message.content]：根据消息正文，从字典中查找它对应的 Token 数量。
         answer = sum(lengths[message.content] for message in example.messages if message.role == "assistant")
         return {"prompt": context, "answer": answer, "total": context + answer}
 
+    # PreferenceExample
     context = sum(lengths[message.content] for message in example.prompt)
     chosen = lengths[example.chosen[0].content]
     rejected = lengths[example.rejected[0].content]
@@ -93,49 +95,75 @@ def clean_rows(rows: list[dict], dataset_id: str, split: str, kind: str, tokeniz
         kind 选择数据格式，tokenizer 计算正文长度，max_tokens 是正文 token 上限。
     输出
         返回 (accepted, rejects, stats)。accepted 是通过校验和长度过滤的 JSON 记录。
-        rejects 记录原始行号和原因，stats 保存过滤计数和所有格式有效样本的原始长度。
+        rejects 记录原始行号和原因，stats 保存数据清洗统计信息。
 
     关键步骤
         先分清结构问题和文本问题，再批量分词。分词前去掉重复正文，
         共用 Prompt 的偏好对可以直接复用同一个长度。
     """
     # --- 步骤 1: 标准化字段，记录校验失败的样本 ---
-    valid = []
-    rejects = []
+    valid = []      # 通过校验的数据，SFTExample/ PreferenceExample
+    rejects = []    # 没有通过校验的数据信息及原因
     for row_number, row in enumerate(rows, start=1):
         try:
             valid.append(convert_record(row, dataset_id, split, row_number, kind))
+        # 捕获 Pydantic 抛出的错误，eg: Value error, empty_message
         except ValidationError as error:
-            issue = error.errors(include_url=False, include_input=False, include_context=False)[0]
+            # .errors(): Pydantic 的 ValidationError 提供的方法：将校验错误转换为字典列表，方便程序读取具体错误信息。类似:
+            # [
+            #     {
+            #         "type": "value_error",                    # 便于代码判断的错误类型
+            #         "loc": ("content",),                      # 错误发生的位置
+            #         "msg": "Value error, empty_message",      # 错误描述
+            #         "input": "",                              # 该校验接收到的输入
+            #         "ctx": {"error": ValueError("empty_message")}     # context 可选的补充信息
+            #     }
+            # ]
+            issue = error.errors(include_url=False, include_input=False, include_context=False)[0]  # [0]：如果同一条样本存在多个字段错误，这里只记录第一个错误
+            # removeprefix()：Python 字符串的方法，用于删除字符串开头指定的内容
             reason = issue["msg"].removeprefix("Value error, ") if issue["type"] == "value_error" else issue["type"]
             rejects.append({"source": dataset_id, "split": split, "row": row_number, "reason": reason})
+        # 字典中不存在指定键、操作或参数类型不正确、值不符合要求
+        # ValidationError 本身属于 ValueError 的子类，所以要把 ValidationError 放在前面
         except (KeyError, TypeError, ValueError) as error:
+            # 这里ValueError 接收 convert_record() 发现偏好对两边的共同上文不同，直接抛出的 ValueError("preference_prompt_mismatch")
             reason = str(error) if type(error) is ValueError else "invalid_source_fields"
             rejects.append({"source": dataset_id, "split": split, "row": row_number, "reason": reason})
+    # print(type(valid[0]))   # <class 'posttrainlab.data.schema.SFTExample'>
 
     # --- 步骤 2: 分批统计不同正文的 token 数 ---
     # 用正文作字典的键，偏好对的共享 Prompt 只需计数一次。
-    texts = list(dict.fromkeys(text for example in valid for text in message_texts(example)))
-    lengths = {}
+    # dict.fromkeys()：字典的类方法，根据给定的键创建一个新字典。这里创建的字典的键即为各 text, 就是各 content 内容
+    texts = list(dict.fromkeys(text for example in valid for text in message_texts(example)))   # 将字典的键重新转换为列表，使用字典是为了去重
+    lengths = {}    # 统计各 content 分词后的 token 数量
     for start in range(0, len(texts), 256):
-        chunk = texts[start:start + 256]
-        encoded = tokenizer(chunk, add_special_tokens=False, return_length=True, verbose=False)  # 只统计正文长度
+        chunk = texts[start:start + 256]    # 避免一次性将过多文本传入 Tokenizer
+        encoded = tokenizer(chunk, add_special_tokens=False, return_length=True, verbose=False)  # 只统计正文长度，不额外添加特殊 token, 关闭部分额外提示信息
+        # 分词后，返回的结果是一个 BatchEncoding 对象。
+        # encoded["length"] 可以获取每条文本对应的 Token 数量
         lengths.update(zip(chunk, encoded["length"], strict=True))
+        # strict=True 表示要求两个可迭代对象的长度必须一致，否则抛出 ValueError。
 
     # --- 步骤 3: 按整条样本的长度筛选，并保留筛选前计数 ---
-    accepted = []
-    before_lengths = []
+    accepted = []           # 存放最终通过全部过滤的样本
+    before_lengths = []     # 保存所有结构校验通过样本的长度统计
+    # 计算每条样本各字段的 Token 长度
     for example in valid:
         measured = token_counts(example, lengths)
         before_lengths.append(measured)
+        # 超过 Token 上限的过滤掉
         if measured["total"] > max_tokens:
             rejects.append({
                 "source": dataset_id, "split": split, "row": example.metadata["source_row"],
                 "reason": "too_long", "total_tokens": measured["total"],
             })
             continue
+        # 更新补充 metadata
         example.metadata["tokens"] = measured
         example.metadata["task_category"] = task_category(first_user(example))
+        # model_dump() 是 Pydantic V2 的 BaseModel 提供的方法。
+        # - 作用是：将 Pydantic 模型对象转换成 Python 字典，内部的 Message 对象也会递归转换成字典。
+        # - mode="json" 表示以 JSON 兼容的形式导出数据，并不是直接转换为 json 格式
         accepted.append(example.model_dump(mode="json"))
 
     counts = Counter(item["reason"] for item in rejects)
@@ -161,7 +189,7 @@ def prepare_main(kind: str) -> None:
     config = read_yaml(parser.parse_args().config)
     catalog = read_yaml(SOURCES_CONFIG)
     dataset_id = config["dataset_id"]
-    source = catalog["sources"][dataset_id]
+    source = catalog["sources"][dataset_id]     # 包含 revision 、train_split、kind 等信息
     if source["kind"] != kind:
         parser.error(f"此脚本需要 {kind} 数据源")
 

@@ -7,7 +7,7 @@
     data/interim/preference/ 下的 Prompt、chosen、rejected、过滤记录和中间清单。
 
 运行方式
-    python scripts/prepare_preference_data.py --config configs/data_preference.yaml
+    python scripts/prepare_preference_data.py (--config configs/data_preference.yaml)
 """
 
 from posttrainlab.data.prepare import prepare_main

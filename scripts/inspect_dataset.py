@@ -7,7 +7,7 @@
     候选数据各自的 samples.jsonl 与 summary.json，保存在 outputs/data_quality/candidates/。
 
 运行方式
-    python scripts/inspect_dataset.py --dataset-id HuggingFaceH4/ultrachat_200k
+    python scripts/inspect_dataset.py (--dataset-id HuggingFaceH4/ultrachat_200k)
 """
 
 import argparse

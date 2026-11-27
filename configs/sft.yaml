@@ -1,0 +1,29 @@
+# 固定 Base 与数据阶段使用的 Qwen2.5 Tokenizer 版本。
+model:
+  name_or_path: Qwen/Qwen2.5-0.5B
+  revision: 060db6499f32faf8b98477b0a26969ef7d8b9987
+
+data:
+  manifest: data/manifests/dataset_v1.json
+  max_length: 512  # 套用 Chat Template 后的序列长度上限
+
+lora:
+  r: 8  # 低秩矩阵的中间维度
+  lora_alpha: 16  # LoRA 增量按 alpha / r 缩放
+  lora_dropout: 0.05  # 训练时对 LoRA 分支的输入做 5% Dropout
+  target_modules: [q_proj, v_proj]  # 注入注意力的 Query 和 Value 投影
+
+# 每个 batch 放 2 条样本，累积 4 个 batch 再更新。
+training:
+  seed: 42
+  learning_rate: 0.0002
+  num_train_epochs: 1
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  gradient_accumulation_steps: 4
+  activation_checkpointing: false  # 开启时在反向传播中重算部分激活以节省显存
+  warmup_steps: 0.03  # 小数表示占总更新步数的比例
+  weight_decay: 0.0
+  logging_steps: 10  # 每 10 次优化器更新记录一项训练日志
+
+output_dir: outputs/models/sft
